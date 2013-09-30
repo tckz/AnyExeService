@@ -3,6 +3,7 @@
 　・複数のサービスを登録するときは、exe/configをコピーして使う。
 　　・シンボリックリンク不可。
 
+
 ○コマンドライン
 　Example:
 　%windir%\Microsoft.NET\Framework64\v4.0.30319\InstallUtil.exe AnyExeService.exe
@@ -35,5 +36,14 @@ AnyExeService.exe.config
     <add key="Argument" value=""/>
     <add key="WorkingDirectory" value=""/>
 
+
+○ソース
+
+  https://github.com/tckz/AnyExeService
+
+
+○ライセンス
+
+　SEE LISENCE.txt　（2条項BSDライセンス）
 
 
