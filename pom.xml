@@ -1,0 +1,33 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>cc.breeze</groupId>
+  <version>0.0.1</version>
+  <name>anyexeservice</name>
+  <properties>
+	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	<maven.compiler.encoding>UTF-8</maven.compiler.encoding>
+	<maven.compiler.target>1.7</maven.compiler.target>
+	<maven.compiler.source>1.7</maven.compiler.source>
+	<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+	<sonar.sources>.</sonar.sources>
+	<sonar.language>cs</sonar.language>
+    <sonar.exclusions></sonar.exclusions>
+	<sonar.fxcop.mode>skip</sonar.fxcop.mode>
+	<sonar.dotnet.key.generation.strategy>safe</sonar.dotnet.key.generation.strategy>
+	<sonar.gendarme.mode>skip</sonar.gendarme.mode>
+	<sonar.gallio.mode>skip</sonar.gallio.mode>
+	<sonar.ndeps.mode>skip</sonar.ndeps.mode>
+	<sonar.stylecop>skip</sonar.stylecop>
+  </properties>
+
+  <artifactId>anyexeservice</artifactId>
+  <reporting>
+	<plugins>
+	</plugins>
+  </reporting>
+  <build>
+  	<plugins>
+
+  	</plugins>
+  </build>
+</project>
