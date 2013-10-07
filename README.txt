@@ -44,6 +44,6 @@ AnyExeService.exe.config
 
 ○ライセンス
 
-　SEE LISENCE.txt　（2条項BSDライセンス）
+　SEE LICENSE.txt　（2条項BSDライセンス）
 
 
