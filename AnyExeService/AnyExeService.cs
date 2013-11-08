@@ -8,6 +8,7 @@ using System.ServiceProcess;
 using System.Text;
 using System.Reflection;
 using System.Configuration;
+using System.Timers;
 
 using log4net;
 
@@ -22,6 +23,12 @@ namespace AnyExeService
 
         private ProcessRunner runner = null;
         private SERVICE_STATUS state = new SERVICE_STATUS();
+
+        /// <summary>
+        /// プロセスがExitしたときに再起動してもよい状態かどうか
+        /// サービスの停止イベントで、プロセスを自分でterminateしたときに、さらに再起動させないため
+        /// </summary>
+        private bool allowRestart = true;
 
         public AnyExeService()
         {
@@ -52,44 +59,60 @@ namespace AnyExeService
             this.EventLog.Source = this.ServiceName;
         }
 
-
+        /// <summary>
+        /// サービス開始イベント
+        /// </summary>
+        /// <param name="args"></param>
         protected override void OnStart(string[] args)
         {
-            this.OnStop();
+            logger.Info("OnStart()");
+            this.allowRestart = true;
+
+            this.OnStopProc();
 
             var setting = this.GetSettings();
 
+            var restartEternal = false;
+            Boolean.TryParse(this.GetSettingValue(setting, "Restart", null), out restartEternal);
             var executable = setting["Executable"].Value;
-            var runner = new ProcessRunner()
+            var argument = setting["Argument"].Value;
+            var workingDirectory = setting["WorkingDirectory"].Value;
+
+            Func<ProcessRunner> newRunnerFunc = () =>
             {
-                Executable = executable,
-                Argument = setting["Argument"].Value,
-                WorkingDirectory = setting["WorkingDirectory"].Value,
-                NoWindow = false,
+                var r = new ProcessRunner()
+                {
+                    Executable = executable,
+                    Argument = argument,
+                    WorkingDirectory = workingDirectory,
+                    NoWindow = true,
+                };
+                return r;
             };
 
-            runner.Exited += (sender, ev) =>
-            {
-                var ec = runner.ExitCode;
-                this.SetServiceStateWithExitCode(ServiceState.SERVICE_STOPPED, ec);
-                var mes = String.Format("PID={0}: {1} exit={2}", this.runner.ProcessId, executable, ec);
-                this.EventLog.WriteEntry(mes, EventLogEntryType.Information, 3);
-                logger.Info(mes);
-            };
+            this.StartRunner(CreateRunner(newRunnerFunc, restartEternal));
+        }
 
-            this.runner = runner;
+
+        /// <summary>
+        /// プロセス開始
+        /// </summary>
+        /// <param name="r"></param>
+        private void StartRunner(ProcessRunner r)
+        {
+            this.runner = r;
 
             try
             {
                 this.runner.Run();
 
-                var mes = String.Format("PID={0}: {1}", this.runner.ProcessId, executable);
+                var mes = String.Format("PID={0}: {1}", this.runner.ProcessId, r.Executable);
                 this.EventLog.WriteEntry(mes, EventLogEntryType.Information, 2);
                 logger.Info(mes);
             }
             catch (Exception e)
             {
-                var mes = String.Format("*** Failed to execute {0}", executable);
+                var mes = String.Format("*** Failed to execute {0}", r.Executable);
                 this.EventLog.WriteEntry(mes, EventLogEntryType.Information, 4);
                 logger.Info(mes, e);
 
@@ -97,7 +120,72 @@ namespace AnyExeService
             }
         }
 
+        /// <summary>
+        /// ExitイベントをattachしたProcessRunnerを作成して返す
+        /// </summary>
+        /// <param name="newRunnerFunc">ProcessRunnerをインスタンス化して返す関数</param>
+        /// <param name="restartEternal">Exit後再起動するかどうか</param>
+        /// <returns></returns>
+        private ProcessRunner CreateRunner(Func<ProcessRunner> newRunnerFunc, bool restartEternal)
+        {
+            var newRunner = newRunnerFunc();
+
+            newRunner.Exited += (sender, ev) =>
+            {
+                var ec = newRunner.ExitCode;
+                var mes = String.Format("PID={0}: {1} exit={2}", this.runner.ProcessId, newRunner.Executable, ec);
+                this.EventLog.WriteEntry(mes, EventLogEntryType.Information, 3);
+                logger.Info(mes);
+
+                this.runner = null;
+
+                if (restartEternal && this.allowRestart)
+                {
+                    var timer = new Timer()
+                    {
+                        AutoReset = false,
+                        Enabled = true,
+                        Interval = 10 * 1000,
+                    };
+
+                    timer.Elapsed += (timeSender, timeEv) =>
+                    {
+                        if (!this.allowRestart || this.runner != null)
+                        {
+                            return;
+                        }
+
+                        // プロセス再起動
+                        var nextRunner = this.CreateRunner(newRunnerFunc, restartEternal);
+                        this.StartRunner(nextRunner);
+                        timer.Dispose();
+                    };
+
+                }
+                else
+                {
+                    this.SetServiceStateWithExitCode(ServiceState.SERVICE_STOPPED, ec);
+                }
+            };
+
+            return newRunner;
+        }
+
+        /// <summary>
+        /// サービス停止イベント
+        /// </summary>
         protected override void OnStop()
+        {
+            logger.Info("OnStop()");
+            this.allowRestart = false;
+            this.OnStopProc();
+        }
+
+        /// <summary>
+        /// OnStop時にやること。
+        /// 実行中のプロセスを強制終了
+        /// </summary>
+        private void OnStopProc()
         {
             if (this.runner == null)
             {
@@ -117,9 +205,11 @@ namespace AnyExeService
             this.runner = null;
         }
 
+
         protected override void OnShutdown()
         {
-            this.OnStop();
+            logger.Info("OnShutdown()");
+            this.OnStopProc();
         }
 
         /// <summary>
@@ -161,6 +251,21 @@ namespace AnyExeService
             var setting = conf.AppSettings.Settings;
 
             return setting;
+        }
+
+
+        /// <summary>
+        /// 設定値コレクションから値を返す。
+        /// キーが存在しない場合に、指定したデフォルト値を返す
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <param name="key"></param>
+        /// <param name="defaultValue"></param>
+        /// <returns></returns>
+        private string GetSettingValue(KeyValueConfigurationCollection collection, string key, string defaultValue)
+        {
+            var v = collection[key];
+            return v == null ? defaultValue : v.Value;
         }
     }
 }
