@@ -50,21 +50,21 @@ namespace AnyExeService
         {
             logger.InfoFormat("Exe={0}, Argument={1}, WorkingDir={2}", this.Executable, this.Argument, this.WorkingDirectory);
 
-            var psInfo = new ProcessStartInfo();
-            psInfo.FileName = this.Executable;
-            psInfo.Arguments = this.Argument;
-            psInfo.CreateNoWindow = this.NoWindow;
-            psInfo.UseShellExecute = false;
-            psInfo.RedirectStandardOutput = false;
-            psInfo.RedirectStandardError = false;
-            psInfo.RedirectStandardInput = false;
+            var startInfo = new ProcessStartInfo();
+            startInfo.FileName = this.Executable;
+            startInfo.Arguments = this.Argument;
+            startInfo.CreateNoWindow = this.NoWindow;
+            startInfo.UseShellExecute = false;
+            startInfo.RedirectStandardOutput = false;
+            startInfo.RedirectStandardError = false;
+            startInfo.RedirectStandardInput = false;
             if (this.WorkingDirectory != null && this.WorkingDirectory != "")
             {
-                psInfo.WorkingDirectory = this.WorkingDirectory;
+                startInfo.WorkingDirectory = this.WorkingDirectory;
             }
 
             this.process.EnableRaisingEvents = true;
-            this.process.StartInfo = psInfo;
+            this.process.StartInfo = startInfo;
             this.process.Start();
         }
 
