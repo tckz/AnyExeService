@@ -8,12 +8,12 @@ using System.Threading;
 
 namespace AnyExeService
 {
-    static class Program
+    public static class Program
     {
         /// <summary>
         /// アプリケーションのメイン エントリ ポイントです。
         /// </summary>
-        static void Main()
+        public static void Main()
         {
             var servicesToRun = new ServiceBase[] 
 			{ 

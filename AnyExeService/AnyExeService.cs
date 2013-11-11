@@ -73,7 +73,7 @@ namespace AnyExeService
             var setting = this.GetSettings();
 
             var restartEternal = false;
-            Boolean.TryParse(this.GetSettingValue(setting, "Restart", null), out restartEternal);
+            bool.TryParse(this.GetSettingValue(setting, "Restart", null), out restartEternal);
             var executable = setting["Executable"].Value;
             var argument = setting["Argument"].Value;
             var workingDirectory = setting["WorkingDirectory"].Value;
@@ -106,13 +106,13 @@ namespace AnyExeService
             {
                 this.runner.Run();
 
-                var mes = String.Format("PID={0}: {1}", this.runner.ProcessId, r.Executable);
+                var mes = string.Format("PID={0}: {1}", this.runner.ProcessId, r.Executable);
                 this.EventLog.WriteEntry(mes, EventLogEntryType.Information, 2);
                 logger.Info(mes);
             }
             catch (Exception e)
             {
-                var mes = String.Format("*** Failed to execute {0}", r.Executable);
+                var mes = string.Format("*** Failed to execute {0}", r.Executable);
                 this.EventLog.WriteEntry(mes, EventLogEntryType.Information, 4);
                 logger.Info(mes, e);
 
@@ -133,7 +133,7 @@ namespace AnyExeService
             newRunner.Exited += (sender, ev) =>
             {
                 var ec = newRunner.ExitCode;
-                var mes = String.Format("PID={0}: {1} exit={2}", this.runner.ProcessId, newRunner.Executable, ec);
+                var mes = string.Format("PID={0}: {1} exit={2}", this.runner.ProcessId, newRunner.Executable, ec);
                 this.EventLog.WriteEntry(mes, EventLogEntryType.Information, 3);
                 logger.Info(mes);
 

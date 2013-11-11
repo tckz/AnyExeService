@@ -8,7 +8,7 @@ using log4net;
 
 namespace AnyExeService
 {
-    class ProcessRunner : IDisposable
+    public class ProcessRunner : IDisposable
     {
         private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 

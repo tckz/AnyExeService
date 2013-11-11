@@ -55,7 +55,7 @@ namespace AnyExeService
         SERVICE_PAUSED = 0x00000007,
     }
 
-    static class ServiceUtil
+    public static class ServiceUtil
     {
         [DllImport("ADVAPI32.DLL", EntryPoint = "SetServiceStatus", SetLastError = true)]
         public static extern bool SetServiceStatus(IntPtr hServiceStatus, ref SERVICE_STATUS lpServiceStatus);
@@ -67,7 +67,7 @@ namespace AnyExeService
         /// <returns></returns>
         public static string MakeShouldBe(Type e)
         {
-            return String.Join("|", Enum.GetNames(e));
+            return string.Join("|", Enum.GetNames(e));
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace AnyExeService
             {
                 var t = typeof(TEnum);
                 throw new ApplicationException(
-                    String.Format(
+                    string.Format(
                         "Unknown {0}: {1}, should be {2}",
                         t.Name,
                         s,
